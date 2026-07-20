@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sudoku couleur</string>
+    <string name="title_activity_main">Sudoku couleur</string>
+    <string name="package_name">com.pierrewozniak.sudokucouleur</string>
+    <string name="custom_url_scheme">com.pierrewozniak.sudokucouleur</string>
+</resources>
