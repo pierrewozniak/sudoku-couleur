@@ -1,0 +1,39 @@
+function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs }) {
+  
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#6db1b8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}>
+      <p style={{ color: 'white', fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>
+        Erreurs : {erreurs} / 3
+      </p>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', padding: '12px', backgroundColor: 'white', borderRadius: '12px' }}>
+        {COULEURS.map((couleur, index) => (
+          <div key={index} onClick={() => setCouleurSelectionnee(index)} style={{
+            width: '40px', height: '40px',
+            backgroundColor: couleur, borderRadius: '8px',
+            border: index === couleurSelectionnee ? '3px solid #333' : '2px solid black',
+            cursor: 'pointer',
+            transform: index === couleurSelectionnee ? 'scale(1.2)' : 'scale(1)',
+          }} />
+        ))}
+      </div>
+
+      <div style={{ border: '3px solid #333', borderRadius: '4px', overflow: 'hidden' }}>
+        {grille.map((ligne, ligneIndex) => (
+          <div key={ligneIndex} style={{ display: 'flex' }}>
+            {ligne.map((celluleIndex, colIndex) => (
+              <Cellule
+                key={colIndex}
+                couleur={celluleIndex === null ? null : COULEURS[celluleIndex]}
+                onClick={() => handleCelluleClic(ligneIndex, colIndex)}
+                borderRight={colIndex === 2 || colIndex === 5}
+                borderBottom={ligneIndex === 2 || ligneIndex === 5}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
