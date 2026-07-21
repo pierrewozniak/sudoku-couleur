@@ -38,28 +38,33 @@ const STYLE_CARTE = {
   boxSizing: 'border-box',
 }
 
-function Cellule({ couleur, onClick, borderRight, borderBottom }) {
+function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   const estVide = couleur === null
   return (
-    <div onClick={onClick} style={{
-      width: 'min(calc((100vw - 32px) / 9), 60px)',
-      height: 'min(calc((100vw - 32px) / 9), 60px)',
-      backgroundColor: estVide ? '#f0f0f0' : couleur,
-      border: '1px solid #ddd',
-      borderRight: borderRight ? '3px solid #2C3E50' : '1px solid #ddd',
-      borderBottom: borderBottom ? '3px solid #2C3E50' : '1px solid #ddd',
-      cursor: 'pointer',
-      boxSizing: 'border-box',
-      transition: 'opacity 0.15s',
-    }} />
+    <button
+      onClick={onClick}
+      className={enErreur ? 'cellule-erreur' : ''}
+      style={{
+        width: 'min(calc((100vw - 32px) / 9), 60px)',
+        height: 'min(calc((100vw - 32px) / 9), 60px)',
+        backgroundColor: estVide ? '#f0f0f0' : couleur,
+        border: '1px solid #ddd',
+        borderRight: borderRight ? '3px solid #2C3E50' : '1px solid #ddd',
+        borderBottom: borderBottom ? '3px solid #2C3E50' : '1px solid #ddd',
+        cursor: 'pointer',
+        boxSizing: 'border-box',
+        padding: 0,
+        display: 'block',
+      }}
+    />
   )
 }
 
 function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie }) {
   const niveaux = [
-    { id: 'facile', label: 'Facile', emoji: '😊', description: '20 cases à remplir' },
-    { id: 'moyen', label: 'Moyen', emoji: '🤔', description: '40 cases à remplir' },
-    { id: 'difficile', label: 'Difficile', emoji: '😤', description: '60 cases à remplir' },
+    { id: 'facile', label: 'Facile', description: '20 cases à remplir' },
+    { id: 'moyen', label: 'Moyen', description: '40 cases à remplir' },
+    { id: 'difficile', label: 'Difficile', description: '60 cases à remplir' },
   ]
 
   return (
@@ -87,7 +92,6 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
                 transition: 'all 0.15s',
               }}
             >
-              <span style={{ fontSize: '24px' }}>{n.emoji}</span>
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontWeight: 'bold', color: niveau === n.id ? '#1a56db' : '#333' }}>{n.label}</div>
                 <div style={{ fontSize: '12px', color: '#888' }}>{n.description}</div>
@@ -111,7 +115,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
               cursor: 'pointer',
             }}
           >
-            Lancer la partie 🚀
+            Lancer la partie 
           </button>
         )}
           {partieSauvegardee && (
@@ -128,7 +132,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
               marginBottom: '12px',
               marginTop:'12px'
             }}>
-              ▶️ Reprendre la partie
+               Reprendre la partie
             </button>
           )}
       </div>
@@ -136,7 +140,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
   )
 }
 
-function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee}) {
+function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur}) {
   function formaterTemps(secondes) {
   const minutes = Math.floor(secondes / 60)
   const secs = secondes % 60
@@ -159,7 +163,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
         <span style={{ fontWeight: 'bold', fontSize: '18px', color: erreurs > 0 ? '#E74C3C' : '#333' }}>
           Erreurs : {erreurs} / 3
         </span>
-        <span>⏱️ {formaterTemps(temps)}</span>
+        <span> {formaterTemps(temps)}</span>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -180,7 +184,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
             cursor: 'pointer',
           }}
         >
-          🏠 Accueil
+           Accueil
         </button>
       </div>
 
@@ -194,24 +198,25 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
         flexWrap: 'wrap',
         justifyContent: 'center',
       }}>
-        {COULEURS.map((couleur, index) => (
-          <div
-            key={index}
-            onClick={() => setCouleurSelectionnee(index)}
-            style={{
-              width: '42px', height: '42px',
-              backgroundColor: couleur,
-              borderRadius: '10px',
-              border: index === couleurSelectionnee ? '3px solid #1a56db' : '2px solid #e5e7eb',
-              cursor: 'pointer',
-              transform: index === couleurSelectionnee ? 'scale(1.2)' : 'scale(1)',
-              transition: 'all 0.15s',
-              boxShadow: index === couleurSelectionnee ? '0 2px 8px rgba(26,86,219,0.3)' : 'none',
-              opacity: couleursCompletes.includes(index) ? 0.3 : 1,
-              pointerEvents: couleursCompletes.includes(index) ? 'none' : 'auto'
-            }}
-          />
-        ))}
+      {COULEURS.map((couleur, index) => (
+        <button
+          key={index}
+          onClick={() => setCouleurSelectionnee(index)}
+          style={{
+            width: '42px', height: '42px',
+            backgroundColor: couleur,
+            borderRadius: '10px',
+            border: index === couleurSelectionnee ? '3px solid #1a56db' : '2px solid #e5e7eb',
+            cursor: 'pointer',
+            transform: index === couleurSelectionnee ? 'scale(1.2)' : 'scale(1)',
+            transition: 'all 0.15s',
+            boxShadow: index === couleurSelectionnee ? '0 2px 8px rgba(26,86,219,0.3)' : 'none',
+            opacity: couleursCompletes.includes(index) ? 0.3 : 1,
+            pointerEvents: couleursCompletes.includes(index) ? 'none' : 'auto',
+            padding: 0,
+          }}
+        />
+      ))}
       </div>
 
       <div style={{
@@ -229,6 +234,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
                 onClick={() => handleCelluleClic(ligneIndex, colIndex)}
                 borderRight={colIndex === 2 || colIndex === 5}
                 borderBottom={ligneIndex === 2 || ligneIndex === 5}
+                enErreur={celluleErreur?.ligne === ligneIndex && celluleErreur?.col === colIndex}
               />
             ))}
           </div>
@@ -238,7 +244,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
   )
 }
 
-function Popup({ titre, message, emoji, lancerPartie, setEcran }) {
+function Popup({ titre, message, lancerPartie, setEcran }) {
   return (
     <div style={{
       position: 'fixed',
@@ -258,7 +264,6 @@ function Popup({ titre, message, emoji, lancerPartie, setEcran }) {
         boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
         minWidth: '300px',
       }}>
-        <div style={{ fontSize: '64px', marginBottom: '16px' }}>{emoji}</div>
         <h2 style={{ color: '#1a56db', fontSize: '28px', margin: '0 0 8px' }}>{titre}</h2>
         <p style={{ color: '#666', marginBottom: '32px' }}>{message}</p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
@@ -275,7 +280,7 @@ function Popup({ titre, message, emoji, lancerPartie, setEcran }) {
               cursor: 'pointer',
             }}
           >
-            🔄 Rejouer
+            Rejouer
           </button>
           <button
             onClick={() => setEcran('accueil')}
@@ -290,7 +295,7 @@ function Popup({ titre, message, emoji, lancerPartie, setEcran }) {
               cursor: 'pointer',
             }}
           >
-            🏠 Accueil
+             Accueil
           </button>
         </div>
       </div>
@@ -310,7 +315,7 @@ function App() {
   const [temps, setTemps] = useState(0)
   const [chronoActif, setChronoActif] = useState(false)
   const [partieSauvegardee, setPartieSauvegardee] = useState(chargerPartie())
-
+  const [celluleErreur, setCelluleErreur] = useState(null)
 
     useEffect(() => {
     if (!chronoActif) return
@@ -380,6 +385,8 @@ function App() {
     } else {
       const nouvellesErreurs = erreurs + 1
       setErreurs(nouvellesErreurs)
+      setCelluleErreur({ ligne : ligneIndex, col : colIndex})
+      setTimeout(() => setCelluleErreur(null), 400)
       if (nouvellesErreurs >= 3) {setStatut('gameover')
          setChronoActif(false)
         supprimerPartie()
@@ -405,9 +412,9 @@ function App() {
       {ecran === 'accueil'
         ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} />
         : <div style={{ position: 'relative' }}>
-            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee}/>
-            {statut === 'gameover' && <Popup emoji="😢" titre="Fin de partie !" message="Tu as fait 3 erreurs..." lancerPartie={lancerPartie} setEcran={setEcran} />}
-            {statut === 'victoire' && <Popup emoji="🎉" titre="Bravo !" message={`Score : ${calculerScore()} pts — Temps : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} />}
+            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur}/>
+            {statut === 'gameover' && <Popup  titre="Fin de partie !" message="Tu as fait 3 erreurs..." lancerPartie={lancerPartie} setEcran={setEcran} />}
+            {statut === 'victoire' && <Popup  titre="Bravo !" message={`Score : ${calculerScore()} pts — Temps : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} />}
           </div>
       }
     </div>
