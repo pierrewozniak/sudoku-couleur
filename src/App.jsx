@@ -64,9 +64,9 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
 
 function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties}) {
   const niveaux = [
-    { id: 'facile', label: 'Facile', description: '20 cases à remplir' },
-    { id: 'moyen', label: 'Moyen', description: '40 cases à remplir' },
-    { id: 'difficile', label: 'Difficile', description: '60 cases à remplir' },
+  { id: 'facile', label: 'Facile', description: '40 cases à remplir' },
+  { id: 'moyen', label: 'Moyen', description: '55 cases à remplir' },
+  { id: 'difficile', label: 'Difficile', description: '65 cases à remplir' },
   ]
 
   return (
