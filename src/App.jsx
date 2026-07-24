@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { generateGrille } from './sudoku.js'
 import { masquerCellules } from './sudoku.js'
-import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie } from './storage.js'
+import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties} from './storage.js'
 
 const COULEURS = [
   '#E74C3C',
@@ -38,6 +38,8 @@ const STYLE_CARTE = {
   boxSizing: 'border-box',
 }
 
+
+
 function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   const estVide = couleur === null
   return (
@@ -60,7 +62,7 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   )
 }
 
-function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie }) {
+function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties}) {
   const niveaux = [
     { id: 'facile', label: 'Facile', description: '20 cases à remplir' },
     { id: 'moyen', label: 'Moyen', description: '40 cases à remplir' },
@@ -76,29 +78,38 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
         <p style={{ color: '#666', marginBottom: '32px' }}>Choisis ta difficulté</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
-          {niveaux.map(n => (
-            <button
-              key={n.id}
-              onClick={() => setNiveau(n.id)}
-              style={{
-                padding: '14px 24px',
-                borderRadius: '12px',
-                border: niveau === n.id ? '2px solid #1a56db' : '2px solid #e5e7eb',
-                backgroundColor: niveau === n.id ? '#eff6ff' : 'white',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.15s',
-              }}
-            >
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 'bold', color: niveau === n.id ? '#1a56db' : '#333' }}>{n.label}</div>
-                <div style={{ fontSize: '12px', color: '#888' }}>{n.description}</div>
-              </div>
-            </button>
-          ))}
-        </div>
+            {niveaux.map(n => (
+              <button
+                key={n.id}
+                onClick={() => setNiveau(n.id)}
+                style={{
+                  padding: '14px 24px',
+                  borderRadius: '12px',
+                  border: niveau === n.id ? '2px solid #1a56db' : '2px solid #e5e7eb',
+                  backgroundColor: niveau === n.id ? '#eff6ff' : 'white',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontWeight: 'bold', color: niveau === n.id ? '#1a56db' : '#333' }}>{n.label}</div>
+                  <div style={{ fontSize: '12px', color: '#888' }}>{n.description}</div>
+                </div>
+                  {dernieresParties && dernieresParties[n.id] && (
+                    <div style={{ textAlign: 'right', fontSize: '12px', color: '#1a56db' }}>
+                      <div style={{ fontWeight: 'bold' }}>Dernière partie</div>
+                      <div>{dernieresParties[n.id].score} pts / {dernieresParties[n.id].temps}s</div>
+                    </div>
+                  )}
+               </button>
+              ))}
+            </div>
+
+
 
         {niveau && (
           <button
@@ -140,7 +151,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
   )
 }
 
-function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur}) {
+function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur, utiliserAide, aides}) {
   function formaterTemps(secondes) {
   const minutes = Math.floor(secondes / 60)
   const secs = secondes % 60
@@ -185,6 +196,22 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
           }}
         >
            Accueil
+        </button>
+        <button
+          onClick={utiliserAide}
+          disabled={aides <= 0}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: aides > 0 ? '#F1C40F' : '#e5e7eb',
+            color: aides > 0 ? '#333' : '#999',
+            border: 'none',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            cursor: aides > 0 ? 'pointer' : 'not-allowed',
+          }}
+        >
+          Aide ({aides})
         </button>
       </div>
 
@@ -316,6 +343,10 @@ function App() {
   const [chronoActif, setChronoActif] = useState(false)
   const [partieSauvegardee, setPartieSauvegardee] = useState(chargerPartie())
   const [celluleErreur, setCelluleErreur] = useState(null)
+  const [meilleursScores, setMeilleursScores] = useState(chargerScores() || {})
+  const [dernieresParties, setDernieresParties] = useState(chargerDernieresParties() || {})
+  const [aides, setAides] = useState(3)
+  const [casesAide, setCasesAide] = useState(0)
 
     useEffect(() => {
     if (!chronoActif) return
@@ -327,8 +358,15 @@ function App() {
 
 
   function lancerPartie() {
-    const nbCachees = niveau === 'facile' ? 20 : niveau === 'moyen' ? 40 : 60
+    const nbCachees = niveau === 'facile' ? 40 : niveau === 'moyen' ? 55 : 65
     const grilleComplete = generateGrille()
+    const grilleInitiale = masquerCellules(grilleComplete, nbCachees)
+
+    const couleursDejaCompletes = []
+    COULEURS.forEach((_, index) => {
+      const nb = grilleInitiale.flat().filter(c => c === index).length
+      if (nb === 9) couleursDejaCompletes.push(index)
+    })
     setSolution(grilleComplete)
     setGrille(masquerCellules(grilleComplete, nbCachees))
     setEcran('jeu')
@@ -337,13 +375,58 @@ function App() {
     setCouleursCompletes([])
     setTemps(0)
     setChronoActif(true)
+    setCouleursCompletes(couleursDejaCompletes)
+    setGrille(grilleInitiale)
+    setAides(3)
+    setCasesAide(0)
   }
 
-    function calculerScore() {
+function utiliserAide() {
+    if (aides <= 0) return
+    const casesVides = []
+    grille.forEach((ligne, li) => {
+      ligne.forEach((cellule, ci) => {
+        if (cellule === null) casesVides.push({ li, ci })
+      })
+    })
+    
+    if (casesVides.length === 0) return
+    const { li, ci } = casesVides[Math.floor(Math.random() * casesVides.length)]
+    
+    // Placer la bonne couleur
+    const nouvelleGrille = grille.map((ligne, l) =>
+      ligne.map((cellule, c) =>
+        l === li && c === ci ? solution[li][ci] : cellule
+      )
+    )
+    
+    setGrille(nouvelleGrille)
+    const nbOccurrences = nouvelleGrille
+        .flat()
+        .filter(c => c === solution[li][ci])
+        .length
+    if (nbOccurrences === 9) {
+      setCouleursCompletes(prev => [...prev, solution[li][ci]])
+    }
+    setAides(aides - 1)
+    setCasesAide(casesAide + 1)
+    const estTerminee = nouvelleGrille.every(ligne => ligne.every(cellule => cellule !== null))
+    if (estTerminee) {
+      setChronoActif(false)
+      setStatut('victoire')
+      sauvegarderScore(niveau, calculerScore(), temps)
+      sauvegarderDernierePartie(niveau, calculerScore(), temps)
+      setDernieresParties(chargerDernieresParties())
+      setMeilleursScores(chargerScores())
+      supprimerPartie()
+    }
+  }
+  function calculerScore() {
   const pointsBase = niveau === 'facile' ? 1000 : niveau === 'moyen' ? 2000 : 3000
   const malusErreurs = erreurs * 200
+  const malusAides = casesAide * 150
   const bonusTemps = temps < 120 ? 500 : temps < 300 ? 200 : temps < 600 ? 100 : 0
-  return pointsBase - malusErreurs + bonusTemps
+  return Math.max(0, pointsBase - malusErreurs - malusAides + bonusTemps)
   }
 
   function handleCelluleClic(ligneIndex, colIndex) {
@@ -380,6 +463,9 @@ function App() {
       if (estTerminee) {setChronoActif(false)
           setStatut('victoire')
           sauvegarderScore(niveau, calculerScore(), temps)
+          sauvegarderDernierePartie(niveau, calculerScore(), temps)
+          setDernieresParties(chargerDernieresParties())
+          setMeilleursScores(chargerScores())
           supprimerPartie()
         }
     } else {
@@ -410,9 +496,9 @@ function App() {
   return (
     <div style={{ minHeight: '100dvh',background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
       {ecran === 'accueil'
-        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} />
+        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties}/>
         : <div style={{ position: 'relative' }}>
-            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur}/>
+            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides}/>
             {statut === 'gameover' && <Popup  titre="Fin de partie !" message="Tu as fait 3 erreurs..." lancerPartie={lancerPartie} setEcran={setEcran} />}
             {statut === 'victoire' && <Popup  titre="Bravo !" message={`Score : ${calculerScore()} pts — Temps : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} />}
           </div>

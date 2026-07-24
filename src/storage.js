@@ -29,3 +29,14 @@ export function chargerPartie() {
 export function supprimerPartie() {
   localStorage.removeItem('sudoku_partie')
 }
+
+export function sauvegarderDernierePartie(niveau, score, temps) {
+  const dernieres = chargerDernieresParties()
+  dernieres[niveau] = { score, temps }
+  localStorage.setItem('sudoku_dernieres', JSON.stringify(dernieres))
+}
+
+export function chargerDernieresParties() {
+  const data = localStorage.getItem('sudoku_dernieres')
+  return data ? JSON.parse(data) : {}
+}
