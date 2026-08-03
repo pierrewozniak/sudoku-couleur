@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { generateGrille } from './sudoku.js'
 import { masquerCellules } from './sudoku.js'
 import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties} from './storage.js'
+import { Analytics } from "@vercel/analytics/react"
 
 const COULEURS = [
   '#E74C3C',
@@ -495,6 +496,7 @@ function utiliserAide() {
   }
   return (
     <div style={{ minHeight: '100dvh',background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
+      <Analytics />
       {ecran === 'accueil'
         ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties}/>
         : <div style={{ position: 'relative' }}>
