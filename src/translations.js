@@ -24,6 +24,9 @@ export const translations = {
     casesF: '40 cases à remplir',
     casesM: '55 cases à remplir',
     casesD: '65 cases à remplir',
+    modeDaltonisme: 'Mode daltonien',
+    langue: 'Français/Anglais',
+    fermer: 'Fermer',
   },
   en: {
     titre: 'Color Sudoku',
@@ -50,5 +53,8 @@ export const translations = {
     casesF: '40 cells to fill',
     casesM: '55 cells to fill',
     casesD: '65 cells to fill',
+    modeDaltonisme: 'Colorblind mode',
+    langue: 'English/french',
+    fermer: 'Close',
   }
 }

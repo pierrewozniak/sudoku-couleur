@@ -4,6 +4,8 @@ import { masquerCellules } from './sudoku.js'
 import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak} from './storage.js'
 import { Analytics } from "@vercel/analytics/react"
 import { translations } from './translations.js'
+import parametres from './assets/parametres.png'
+
 
 const COULEURS = [
   '#E74C3C',
@@ -15,6 +17,19 @@ const COULEURS = [
   '#1ABC9C',
   '#795548',
   '#2C3E50',
+]
+
+
+const COULEURS_DALTONIEN = [
+  '#000000',
+  '#E69F00',
+  '#56B4E9',
+  '#009E73',
+  '#F0E442',
+  '#0072B2', 
+  '#D55E00', 
+  '#CC79A7', 
+  '#A0A0A0', 
 ]
 
 const STYLE_PAGE = {
@@ -64,101 +79,190 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   )
 }
 
-function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t}) {
+function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t, modeDaltonisme, setModeDaltonisme, setParametresOuverts}) {
   const niveaux = [
   { id: 'facile', label: t.facile, description: t.casesF },
   { id: 'moyen', label: t.moyen, description: t.casesM },
   { id: 'difficile', label: t.difficile, description: t.casesD },
   ]
 
-  return (
-   <div style={{ ...STYLE_PAGE, background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
-      <div style={STYLE_CARTE}>
-        <h1 style={{ color: '#1a56db', fontSize: '36px', marginBottom: '8px', letterSpacing: '-1px' }}>
+
+return (
+  <div style={{ ...STYLE_PAGE, background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
+    <div style={STYLE_CARTE}>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+        <h1 style={{ color: '#1a56db', fontSize: '36px', margin: 0, letterSpacing: '-1px' }}>
           🎨 Sudoku Couleur
         </h1>
-        {streak > 0 && (
-          <p style={{ color: '#1a56db', fontWeight: 'bold', fontSize: '14px', marginBottom: '16px' }}>
-            {t.serieEnCours} : {streak}{streak > 1 ? t.jours : t.jour}
-          </p>
-        )}
-        <p style={{ color: '#666', marginBottom: '32px' }}>{t.choisisDifficulte}</p>
+    <button 
+      onClick={() => setParametresOuverts(true)} 
+      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+    >
+      <img src={parametres} alt="paramètres" style={{ width: '30px', height: '30px' , marginLeft:'55px'}} />
+    </button>
+      </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
-            {niveaux.map(n => (
-              <button
-                key={n.id}
-                onClick={() => setNiveau(n.id)}
-                style={{
-                  padding: '14px 24px',
-                  borderRadius: '12px',
-                  border: niveau === n.id ? '2px solid #1a56db' : '2px solid #e5e7eb',
-                  backgroundColor: niveau === n.id ? '#eff6ff' : 'white',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 'bold', color: niveau === n.id ? '#1a56db' : '#333' }}>{n.label}</div>
-                  <div style={{ fontSize: '12px', color: '#888' }}>{n.description}</div>
-                </div>
-                  {dernieresParties && dernieresParties[n.id] && (
-                    <div style={{ textAlign: 'right', fontSize: '12px', color: '#1a56db' }}>
-                      <div style={{ fontWeight: 'bold' }}>{t.dernierePartie}</div>
-                      <div>{dernieresParties[n.id].score} pts / {dernieresParties[n.id].temps}s</div>
-                    </div>
-                  )}
-               </button>
-              ))}
-            </div>
+      {streak > 0 && (
+        <p style={{ color: '#1a56db', fontWeight: 'bold', fontSize: '14px', marginBottom: '16px' }}>
+          {t.serieEnCours} : {streak} {streak > 1 ? t.jours : t.jour}
+        </p>
+      )}
+      <p style={{ color: '#666', marginBottom: '32px' }}>{t.choisisDifficulte}</p>
 
-
-
-        {niveau && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+        {niveaux.map(n => (
           <button
-            onClick={lancerPartie}
+            key={n.id}
+            onClick={() => setNiveau(n.id)}
             style={{
-              width: '100%',
-              padding: '16px',
-              backgroundColor: '#1a56db',
-              color: 'white',
-              border: 'none',
+              padding: '14px 24px',
               borderRadius: '12px',
-              fontSize: '18px',
-              fontWeight: 'bold',
+              border: niveau === n.id ? '2px solid #1a56db' : '2px solid #e5e7eb',
+              backgroundColor: niveau === n.id ? '#eff6ff' : 'white',
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              transition: 'all 0.15s',
             }}
           >
-            {t.lancerPartie} 
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontWeight: 'bold', color: niveau === n.id ? '#1a56db' : '#333' }}>{n.label}</div>
+              <div style={{ fontSize: '12px', color: '#888' }}>{n.description}</div>
+            </div>
+            {dernieresParties && dernieresParties[n.id] && (
+              <div style={{ textAlign: 'right', fontSize: '12px', color: '#1a56db' }}>
+                <div style={{ fontWeight: 'bold' }}>{t.dernierePartie}</div>
+                <div>{dernieresParties[n.id].score} pts / {dernieresParties[n.id].temps}s</div>
+              </div>
+            )}
           </button>
-        )}
-          {partieSauvegardee && (
-            <button onClick={reprendrePartie} style={{
-              width: '100%',
-              padding: '16px',
-              backgroundColor: '#7C3AED',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              marginBottom: '12px',
-              marginTop:'12px'
-            }}>
-               {t.reprendrePartie}
-            </button>
-          )}
+        ))}
+      </div>
+
+      {niveau && (
+        <button
+          onClick={lancerPartie}
+          style={{
+            width: '100%',
+            padding: '16px',
+            backgroundColor: '#1a56db',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+          }}
+        >
+          {t.lancerPartie}
+        </button>
+      )}
+
+      {partieSauvegardee && (
+        <button onClick={reprendrePartie} style={{
+          width: '100%',
+          padding: '16px',
+          backgroundColor: '#7C3AED',
+          color: 'white',
+          border: 'none',
+          borderRadius: '12px',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          marginTop: '12px',
+        }}>
+          {t.reprendrePartie}
+        </button>
+      )}
+
+    </div>
+  </div>
+)
+}
+
+function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, langue, setLangue, t }) {
+  return (
+    <div 
+      onClick={() => setParametresOuverts(false)}
+      style={{
+        position: 'fixed',
+        top: 0, left: 0,
+        width: '100%', height: '100%',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        zIndex: 1000,
+      }}
+    >
+      <div 
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'absolute',
+          top: '60px',
+          right: '16px',
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          padding: '16px',
+          width: '220px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+        }}
+      >
+        {/* Langue */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+          <span style={{ fontSize: '14px', color: '#333', fontWeight: 'bold' }}>{t.langue}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '12px', color: langue === 'fr' ? '#1a56db' : '#999', fontWeight: 'bold' }}>FR</span>
+            <div
+              onClick={() => setLangue(langue === 'fr' ? 'en' : 'fr')}
+              style={{
+                width: '40px', height: '22px',
+                backgroundColor: langue === 'en' ? '#1a56db' : '#e5e7eb',
+                borderRadius: '11px', cursor: 'pointer',
+                position: 'relative', transition: 'background-color 0.2s',
+              }}
+            >
+              <div style={{
+                width: '18px', height: '18px',
+                backgroundColor: 'white', borderRadius: '50%',
+                position: 'absolute', top: '2px',
+                left: langue === 'en' ? '20px' : '2px',
+                transition: 'left 0.2s',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+              }}/>
+            </div>
+            <span style={{ fontSize: '12px', color: langue === 'en' ? '#1a56db' : '#999', fontWeight: 'bold' }}>EN</span>
+          </div>
+        </div>
+
+        {/* Mode daltonisme */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+          <span style={{ fontSize: '14px', color: '#333', fontWeight: 'bold' }}>{t.modeDaltonisme}</span>
+          <div
+            onClick={() => setModeDaltonisme(!modeDaltonisme)}
+            style={{
+              width: '40px', height: '22px',
+              backgroundColor: modeDaltonisme ? '#1a56db' : '#e5e7eb',
+              borderRadius: '11px', cursor: 'pointer',
+              position: 'relative', transition: 'background-color 0.2s',
+            }}
+          >
+            <div style={{
+              width: '18px', height: '18px',
+              backgroundColor: 'white', borderRadius: '50%',
+              position: 'absolute', top: '2px',
+              left: modeDaltonisme ? '20px' : '2px',
+              transition: 'left 0.2s',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+            }}/>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur, utiliserAide, aides, t}) {
+function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur, utiliserAide, aides, t, couleursActives}) {
   function formaterTemps(secondes) {
   const minutes = Math.floor(secondes / 60)
   const secs = secondes % 60
@@ -232,7 +336,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
         flexWrap: 'wrap',
         justifyContent: 'center',
       }}>
-      {COULEURS.map((couleur, index) => (
+      {couleursActives.map((couleur, index) => (
         <button
           key={index}
           onClick={() => setCouleurSelectionnee(index)}
@@ -264,7 +368,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
             {ligne.map((celluleIndex, colIndex) => (
               <Cellule
                 key={colIndex}
-                couleur={celluleIndex === null ? null : COULEURS[celluleIndex]}
+                couleur={celluleIndex === null ? null : couleursActives[celluleIndex]}
                 onClick={() => handleCelluleClic(ligneIndex, colIndex)}
                 borderRight={colIndex === 2 || colIndex === 5}
                 borderBottom={ligneIndex === 2 || ligneIndex === 5}
@@ -338,7 +442,7 @@ function Popup({ titre, message, lancerPartie, setEcran, t }) {
 }
 
 function App() {
-  const langue = navigator.language.startsWith('fr') ? 'fr' : 'en'
+  const [langue, setLangue] = useState(navigator.language.startsWith('fr') ? 'fr' : 'en')
   const t = translations[langue]
   const [ecran, setEcran] = useState('accueil')
   const [niveau, setNiveau] = useState(null)
@@ -357,6 +461,9 @@ function App() {
   const [aides, setAides] = useState(3)
   const [casesAide, setCasesAide] = useState(0)
   const [streak] = useState(() => mettreAJourStreak())
+  const [parametresOuverts, setParametresOuverts] = useState(false)
+  const [modeDaltonisme, setModeDaltonisme] = useState(false)
+  const couleursActives = modeDaltonisme ? COULEURS_DALTONIEN : COULEURS
 
 
     useEffect(() => {
@@ -374,7 +481,7 @@ function App() {
     const grilleInitiale = masquerCellules(grilleComplete, nbCachees)
 
     const couleursDejaCompletes = []
-    COULEURS.forEach((_, index) => {
+    couleursActives.forEach((_, index) => {
       const nb = grilleInitiale.flat().filter(c => c === index).length
       if (nb === 9) couleursDejaCompletes.push(index)
     })
@@ -505,16 +612,18 @@ function utiliserAide() {
     setChronoActif(true)
   }
   return (
-    <div style={{ minHeight: '100dvh',background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
+    <div style={{ minHeight: '100dvh', background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
       <Analytics />
       {ecran === 'accueil'
-        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t}/>
+        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts}/>
         : <div style={{ position: 'relative' }}>
-            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides} t={t}/>
+            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides} t={t} couleursActives={couleursActives}/>
             {statut === 'gameover' && <Popup titre={t.finDePartie} message={t.messagePerte} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
             {statut === 'victoire' && <Popup titre={t.bravo} message={`${t.score} : ${calculerScore()} pts — ${t.temps} : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
           </div>
       }
+      {parametresOuverts && <Parametres setParametresOuverts={setParametresOuverts} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} t={t} langue={langue} setLangue={setLangue}
+      />}
     </div>
   )
 }
