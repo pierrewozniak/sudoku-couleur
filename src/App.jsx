@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { generateGrille } from './sudoku.js'
 import { masquerCellules } from './sudoku.js'
-import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak, chargerStreak} from './storage.js'
+import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak} from './storage.js'
 import { Analytics } from "@vercel/analytics/react"
+import { translations } from './translations.js'
 
 const COULEURS = [
   '#E74C3C',
@@ -63,11 +64,11 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   )
 }
 
-function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0}) {
+function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t}) {
   const niveaux = [
-  { id: 'facile', label: 'Facile', description: '40 cases à remplir' },
-  { id: 'moyen', label: 'Moyen', description: '55 cases à remplir' },
-  { id: 'difficile', label: 'Difficile', description: '65 cases à remplir' },
+  { id: 'facile', label: t.facile, description: t.casesF },
+  { id: 'moyen', label: t.moyen, description: t.casesM },
+  { id: 'difficile', label: t.difficile, description: t.casesD },
   ]
 
   return (
@@ -78,10 +79,10 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
         </h1>
         {streak > 0 && (
           <p style={{ color: '#1a56db', fontWeight: 'bold', fontSize: '14px', marginBottom: '16px' }}>
-            Série en cours : {streak} jour{streak > 1 ? 's' : ''}
+            {t.serieEnCours} : {streak}{streak > 1 ? t.jours : t.jour}
           </p>
         )}
-        <p style={{ color: '#666', marginBottom: '32px' }}>Choisis ta difficulté</p>
+        <p style={{ color: '#666', marginBottom: '32px' }}>{t.choisisDifficulte}</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
             {niveaux.map(n => (
@@ -107,7 +108,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
                 </div>
                   {dernieresParties && dernieresParties[n.id] && (
                     <div style={{ textAlign: 'right', fontSize: '12px', color: '#1a56db' }}>
-                      <div style={{ fontWeight: 'bold' }}>Dernière partie</div>
+                      <div style={{ fontWeight: 'bold' }}>{t.dernierePartie}</div>
                       <div>{dernieresParties[n.id].score} pts / {dernieresParties[n.id].temps}s</div>
                     </div>
                   )}
@@ -132,7 +133,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
               cursor: 'pointer',
             }}
           >
-            Lancer la partie 
+            {t.lancerPartie} 
           </button>
         )}
           {partieSauvegardee && (
@@ -149,7 +150,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
               marginBottom: '12px',
               marginTop:'12px'
             }}>
-               Reprendre la partie
+               {t.reprendrePartie}
             </button>
           )}
       </div>
@@ -157,7 +158,7 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
   )
 }
 
-function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur, utiliserAide, aides}) {
+function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur, utiliserAide, aides, t}) {
   function formaterTemps(secondes) {
   const minutes = Math.floor(secondes / 60)
   const secs = secondes % 60
@@ -178,7 +179,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
       }}>
         <span style={{ fontSize: '20px' }}>❌</span>
         <span style={{ fontWeight: 'bold', fontSize: '18px', color: erreurs > 0 ? '#E74C3C' : '#333' }}>
-          Erreurs : {erreurs} / 3
+          {t.erreurs} : {erreurs} / 3
         </span>
         <span> {formaterTemps(temps)}</span>
       </div>
@@ -201,7 +202,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
             cursor: 'pointer',
           }}
         >
-           Accueil
+          {t.accueil}
         </button>
         <button
           onClick={utiliserAide}
@@ -217,7 +218,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
             cursor: aides > 0 ? 'pointer' : 'not-allowed',
           }}
         >
-          Aide ({aides})
+          {t.aide} ({aides})
         </button>
       </div>
 
@@ -277,7 +278,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
   )
 }
 
-function Popup({ titre, message, lancerPartie, setEcran }) {
+function Popup({ titre, message, lancerPartie, setEcran, t }) {
   return (
     <div style={{
       position: 'fixed',
@@ -313,7 +314,7 @@ function Popup({ titre, message, lancerPartie, setEcran }) {
               cursor: 'pointer',
             }}
           >
-            Rejouer
+            {t.rejouer}
           </button>
           <button
             onClick={() => setEcran('accueil')}
@@ -328,7 +329,7 @@ function Popup({ titre, message, lancerPartie, setEcran }) {
               cursor: 'pointer',
             }}
           >
-             Accueil
+             {t.accueil}
           </button>
         </div>
       </div>
@@ -337,6 +338,8 @@ function Popup({ titre, message, lancerPartie, setEcran }) {
 }
 
 function App() {
+  const langue = navigator.language.startsWith('fr') ? 'fr' : 'en'
+  const t = translations[langue]
   const [ecran, setEcran] = useState('accueil')
   const [niveau, setNiveau] = useState(null)
   const [grille, setGrille] = useState(masquerCellules(generateGrille(), 40))
@@ -401,7 +404,7 @@ function utiliserAide() {
     if (casesVides.length === 0) return
     const { li, ci } = casesVides[Math.floor(Math.random() * casesVides.length)]
     
-    // Placer la bonne couleur
+  
     const nouvelleGrille = grille.map((ligne, l) =>
       ligne.map((cellule, c) =>
         l === li && c === ci ? solution[li][ci] : cellule
@@ -505,11 +508,11 @@ function utiliserAide() {
     <div style={{ minHeight: '100dvh',background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
       <Analytics />
       {ecran === 'accueil'
-        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak}/>
+        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t}/>
         : <div style={{ position: 'relative' }}>
-            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides}/>
-            {statut === 'gameover' && <Popup  titre="Fin de partie !" message="Tu as fait 3 erreurs..." lancerPartie={lancerPartie} setEcran={setEcran} />}
-            {statut === 'victoire' && <Popup  titre="Bravo !" message={`Score : ${calculerScore()} pts — Temps : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} />}
+            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides} t={t}/>
+            {statut === 'gameover' && <Popup titre={t.finDePartie} message={t.messagePerte} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
+            {statut === 'victoire' && <Popup titre={t.bravo} message={`${t.score} : ${calculerScore()} pts — ${t.temps} : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
           </div>
       }
     </div>
