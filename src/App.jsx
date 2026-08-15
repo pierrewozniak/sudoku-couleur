@@ -474,29 +474,28 @@ function App() {
 
 
 
-  function lancerPartie() {
-    const nbCachees = niveau === 'facile' ? 40 : niveau === 'moyen' ? 55 : 65
-    const grilleComplete = generateGrille()
-    const grilleInitiale = masquerCellules(grilleComplete, nbCachees)
+function lancerPartie() {
+  const nbCachees = niveau === 'facile' ? 40 : niveau === 'moyen' ? 55 : 65
+  const grilleComplete = generateGrille()
+  const grilleInitiale = masquerCellules(grilleComplete, nbCachees)
 
-    const couleursDejaCompletes = []
-    couleursActives.forEach((_, index) => {
-      const nb = grilleInitiale.flat().filter(c => c === index).length
-      if (nb === 9) couleursDejaCompletes.push(index)
-    })
-    setSolution(grilleComplete)
-    setGrille(masquerCellules(grilleComplete, nbCachees))
-    setEcran('jeu')
-    setErreurs(0)
-    setStatut(null)
-    setCouleursCompletes([])
-    setTemps(0)
-    setChronoActif(true)
-    setCouleursCompletes(couleursDejaCompletes)
-    setGrille(grilleInitiale)
-    setAides(3)
-    setCasesAide(0)
-  }
+  const couleursDejaCompletes = []
+  couleursActives.forEach((_, index) => {
+    const nb = grilleInitiale.flat().filter(c => c === index).length
+    if (nb === 9) couleursDejaCompletes.push(index)
+  })
+
+  setSolution(grilleComplete)
+  setGrille(grilleInitiale)  // ← une seule fois
+  setEcran('jeu')
+  setErreurs(0)
+  setStatut(null)
+  setCouleursCompletes(couleursDejaCompletes)  // ← une seule fois
+  setTemps(0)
+  setChronoActif(true)
+  setAides(3)
+  setCasesAide(0)
+}
 
 function utiliserAide() {
     if (aides <= 0) return
