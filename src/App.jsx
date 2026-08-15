@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { generateGrille } from './sudoku.js'
 import { masquerCellules } from './sudoku.js'
-import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties} from './storage.js'
+import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak, chargerStreak} from './storage.js'
 import { Analytics } from "@vercel/analytics/react"
 
 const COULEURS = [
@@ -63,7 +63,7 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   )
 }
 
-function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties}) {
+function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0}) {
   const niveaux = [
   { id: 'facile', label: 'Facile', description: '40 cases à remplir' },
   { id: 'moyen', label: 'Moyen', description: '55 cases à remplir' },
@@ -76,6 +76,11 @@ function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, repre
         <h1 style={{ color: '#1a56db', fontSize: '36px', marginBottom: '8px', letterSpacing: '-1px' }}>
           🎨 Sudoku Couleur
         </h1>
+        {streak > 0 && (
+          <p style={{ color: '#1a56db', fontWeight: 'bold', fontSize: '14px', marginBottom: '16px' }}>
+            Série en cours : {streak} jour{streak > 1 ? 's' : ''}
+          </p>
+        )}
         <p style={{ color: '#666', marginBottom: '32px' }}>Choisis ta difficulté</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
@@ -348,6 +353,8 @@ function App() {
   const [dernieresParties, setDernieresParties] = useState(chargerDernieresParties() || {})
   const [aides, setAides] = useState(3)
   const [casesAide, setCasesAide] = useState(0)
+  const [streak] = useState(() => mettreAJourStreak())
+
 
     useEffect(() => {
     if (!chronoActif) return
@@ -498,7 +505,7 @@ function utiliserAide() {
     <div style={{ minHeight: '100dvh',background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
       <Analytics />
       {ecran === 'accueil'
-        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties}/>
+        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak}/>
         : <div style={{ position: 'relative' }}>
             <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes ={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides}/>
             {statut === 'gameover' && <Popup  titre="Fin de partie !" message="Tu as fait 3 erreurs..." lancerPartie={lancerPartie} setEcran={setEcran} />}

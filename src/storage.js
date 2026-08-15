@@ -40,3 +40,29 @@ export function chargerDernieresParties() {
   const data = localStorage.getItem('sudoku_dernieres')
   return data ? JSON.parse(data) : {}
 }
+
+export function chargerStreak() {
+  const data = localStorage.getItem('sudoku_streak')
+  return data ? JSON.parse(data) : {streak: 0, derniereVisite: null }
+}
+
+export function mettreAJourStreak() {
+  const { streak, derniereVisite } = chargerStreak()
+  const aujourdhui = new Date().toDateString()
+  const hier = new Date() 
+  hier.setDate(hier.getDate() - 1)
+  const hierString = hier.toDateString()
+  
+  let nouveauStreak 
+  if (derniereVisite === null) {
+    nouveauStreak = 1
+  } else if (derniereVisite === aujourdhui ) {
+    return streak 
+  } else if ( derniereVisite === hierString){
+    nouveauStreak = streak +1 
+  } else {
+    nouveauStreak = 1
+  }
+  localStorage.setItem('sudoku_streak', JSON.stringify({ streak: nouveauStreak, derniereVisite: aujourdhui }))
+return nouveauStreak
+}
