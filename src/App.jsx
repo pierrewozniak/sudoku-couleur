@@ -34,7 +34,6 @@ const COULEURS_DALTONIEN = [
 
 const STYLE_PAGE = {
   minHeight: '100dvh',
-  backgroundColor: '#f4f6f9',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -271,14 +270,15 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
 
   return (
     <div style={{ 
-      ...STYLE_PAGE, 
+      ...STYLE_PAGE,
+      backgroundColor: 'transparent', 
       flexDirection: estMobile ? 'column' : 'row',
       gap: estMobile ? '20px' : '40px',
       padding: estMobile ? '16px' : '40px',
       alignItems: estMobile ? 'center' : 'flex-start',
     }}>
 
-      {/* Colonne gauche — grille */}
+    
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
         
         <h1 style={{ color: '#1a56db', fontSize: '28px', margin: 0 }}>🎨 Sudoku Couleur</h1>
@@ -332,7 +332,7 @@ function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCe
         </div>
       </div>
 
-      {/* Colonne droite — palette */}
+
       <div style={{ 
   display: 'flex', 
   flexDirection: 'column', 
@@ -486,11 +486,11 @@ function lancerPartie() {
   })
 
   setSolution(grilleComplete)
-  setGrille(grilleInitiale)  // ← une seule fois
+  setGrille(grilleInitiale)
   setEcran('jeu')
   setErreurs(0)
   setStatut(null)
-  setCouleursCompletes(couleursDejaCompletes)  // ← une seule fois
+  setCouleursCompletes(couleursDejaCompletes)
   setTemps(0)
   setChronoActif(true)
   setAides(3)
