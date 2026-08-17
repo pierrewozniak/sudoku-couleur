@@ -6,7 +6,8 @@ import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supp
 import { Analytics } from "@vercel/analytics/react"
 import { translations } from './translations.js'
 import parametres from './assets/parametres.png'
-
+import { auth } from './firebase.js'
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
 
 const COULEURS = [
   '#E74C3C',
@@ -203,7 +204,7 @@ return (
 )
 }
 
-function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, langue, setLangue, t }) {
+function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, langue, setLangue, t, utilisateur, seConnecter, seDeconnecter }) {
   return (
     <div 
       onClick={() => setParametresOuverts(false)}
@@ -277,8 +278,27 @@ function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, l
             }}/>
           </div>
         </div>
+          <div style={{ padding: '8px 0', borderTop: '1px solid #f0f0f0', marginTop: '8px' }}>
+            {utilisateur ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', color: '#333' }}>{utilisateur.displayName}</span>
+                <button onClick={seDeconnecter} style={{ fontSize: '12px', color: '#E74C3C', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
+                  {t.deconnexion}
+                </button>
+              </div>
+            ) : (
+              <button onClick={seConnecter} style={{ 
+                width: '100%', padding: '10px', backgroundColor: '#1a56db', 
+                color: 'white', border: 'none', borderRadius: '8px', 
+                fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' 
+              }}>
+                {t.connexion}
+              </button>
+            )}
+          </div>  
       </div>
     </div>
+   
   )
 }
 
@@ -479,6 +499,27 @@ function App() {
   const [modeDaltonisme, setModeDaltonisme] = useState(false)
   const couleursActives = modeDaltonisme ? COULEURS_DALTONIEN : COULEURS
   const [defiDuJour] = useState(() => genererGrilleQuotidienne)
+  const [utilisateur, setUtilisateur] = useState(null)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUtilisateur(user)
+    })
+    return () => unsubscribe()
+  }, [])
+
+  async function seConnecter() {
+    const provider = new GoogleAuthProvider()
+    try {
+      await signInWithPopup(auth, provider)
+    } catch (error) {
+      console.error('Erreur connexion:', error)
+    }
+  }
+
+  async function seDeconnecter() {
+    await signOut(auth)
+  }
 
   useEffect(() => {
   const handleResize = () => setEstMobile(window.innerWidth < 768)
@@ -677,8 +718,7 @@ function utiliserAide() {
             {statut === 'victoire' && <Popup titre={t.bravo} message={`${t.score} : ${calculerScore()} pts — ${t.temps} : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
           </div>
       }
-      {parametresOuverts && <Parametres setParametresOuverts={setParametresOuverts} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} t={t} langue={langue} setLangue={setLangue}
-      />}
+      {parametresOuverts && <Parametres setParametresOuverts={setParametresOuverts} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} t={t} langue={langue} setLangue={setLangue}   utilisateur={utilisateur} seConnecter={seConnecter} seDeconnecter={seDeconnecter}/>}
     </div>
   )
 }

@@ -28,6 +28,10 @@ export const translations = {
     langue: 'Français/Anglais',
     fermer: 'Fermer',
     defiDuJour: 'Défi du jour',
+    connexion: 'Se connecter',
+    deconnexion: 'Se déconnecter',
+    parametres: 'Paramètres',
+
   },
   en: {
     titre: 'Color Sudoku',
@@ -57,6 +61,8 @@ export const translations = {
     modeDaltonisme: 'Colorblind mode',
     langue: 'English/french',
     fermer: 'Close',
-    defiDuJour: 'Daily challenge'
+    defiDuJour: 'Daily challenge',
+    connexion: 'Sign in',
+    deconnexion: 'Sign out',
   }
 }
