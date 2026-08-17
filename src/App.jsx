@@ -453,7 +453,7 @@ function App() {
   const [dernieresParties, setDernieresParties] = useState(chargerDernieresParties() || {})
   const [aides, setAides] = useState(3)
   const [casesAide, setCasesAide] = useState(0)
-  const [streak] = useState(() => mettreAJourStreak())
+  const [streak, setStreak] = useState(() => mettreAJourStreak())
   const [parametresOuverts, setParametresOuverts] = useState(false)
   const [modeDaltonisme, setModeDaltonisme] = useState(false)
   const couleursActives = modeDaltonisme ? COULEURS_DALTONIEN : COULEURS
@@ -472,7 +472,15 @@ function App() {
     return () => clearInterval(interval)
   }, [chronoActif])
 
-
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        setStreak(mettreAJourStreak())
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
 
 function lancerPartie() {
   const nbCachees = niveau === 'facile' ? 40 : niveau === 'moyen' ? 55 : 65
