@@ -26,3 +26,6 @@ dist-ssr
 *.jks
 *.keystore
 key.properties
+
+.env
+.env.local
