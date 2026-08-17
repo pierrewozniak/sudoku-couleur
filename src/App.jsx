@@ -8,6 +8,7 @@ import { translations } from './translations.js'
 import parametres from './assets/parametres.png'
 import { auth } from './firebase.js'
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
+import { sauvegarderScoreFirestore, chargerClassementMondial } from './firestore.js'
 
 const COULEURS = [
   '#E74C3C',
@@ -631,6 +632,7 @@ function utiliserAide() {
       supprimerPartie()
     }
   }
+
   function calculerScore() {
   const pointsBase = niveau === 'facile' ? 1000 : niveau === 'moyen' ? 2000 : 3000
   const malusErreurs = erreurs * 200
@@ -677,6 +679,9 @@ function utiliserAide() {
           setDernieresParties(chargerDernieresParties())
           setMeilleursScores(chargerScores())
           supprimerPartie()
+          if (utilisateur) { 
+          sauvegarderScoreFirestore(utilisateur, niveau, calculerScore(), temps)
+  }
         }
     } else {
       const nouvellesErreurs = erreurs + 1
