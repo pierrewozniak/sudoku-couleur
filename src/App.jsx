@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { generateGrille } from './sudoku.js'
 import { masquerCellules } from './sudoku.js'
+import { genererGrilleQuotidienne} from './sudoku.js'
 import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak} from './storage.js'
 import { Analytics } from "@vercel/analytics/react"
 import { translations } from './translations.js'
@@ -78,7 +79,7 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   )
 }
 
-function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t, setParametresOuverts}) {
+function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t, setParametresOuverts, lancerDefi}) {
   const niveaux = [
   { id: 'facile', label: t.facile, description: t.casesF },
   { id: 'moyen', label: t.moyen, description: t.casesM },
@@ -107,6 +108,26 @@ return (
           {t.serieEnCours} : {streak} {streak > 1 ? t.jours : t.jour}
         </p>
       )}
+      
+      <button
+        onClick={lancerDefi}
+        style={{
+          width: '100%',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '12px',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          marginBottom: '16px',
+          boxShadow: '0 4px 12px rgba(0, 102, 255, 0.3)',
+        }}
+      >
+        {t.defiDuJour} ✦
+      </button>
+
       <p style={{ color: '#666', marginBottom: '32px' }}>{t.choisisDifficulte}</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
@@ -457,6 +478,7 @@ function App() {
   const [parametresOuverts, setParametresOuverts] = useState(false)
   const [modeDaltonisme, setModeDaltonisme] = useState(false)
   const couleursActives = modeDaltonisme ? COULEURS_DALTONIEN : COULEURS
+  const [defiDuJour] = useState(() => genererGrilleQuotidienne)
 
   useEffect(() => {
   const handleResize = () => setEstMobile(window.innerWidth < 768)
@@ -502,6 +524,29 @@ function lancerPartie() {
   setTemps(0)
   setChronoActif(true)
   setAides(3)
+  setCasesAide(0)
+}
+
+function lancerDefi() {
+  const grilleComplete = genererGrilleQuotidienne()
+  const grilleDefi = masquerCellules(grilleComplete, 45)
+  
+  const couleursDejaCompletes = []
+  couleursActives.forEach((_, index) => {
+    const nb = grilleDefi.flat().filter(c => c === index).length
+    if (nb === 9) couleursDejaCompletes.push(index)
+  })
+
+  setSolution(grilleComplete)
+  setGrille(grilleDefi)
+  setNiveau('defi')
+  setEcran('jeu')
+  setErreurs(0)
+  setStatut(null)
+  setCouleursCompletes(couleursDejaCompletes)
+  setTemps(0)
+  setChronoActif(true)
+  setAides(0)
   setCasesAide(0)
 }
 
@@ -625,7 +670,7 @@ function utiliserAide() {
 }}>
       <Analytics />
       {ecran === 'accueil'
-        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts} estMobile={estMobile}/>
+        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts} estMobile={estMobile} defiDuJour={defiDuJour} lancerDefi={lancerDefi}/>
         : <div style={{ position: 'relative' }}>
             <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides} t={t} couleursActives={couleursActives} estMobile={estMobile}/>
             {statut === 'gameover' && <Popup titre={t.finDePartie} message={t.messagePerte} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}

@@ -27,6 +27,7 @@ export const translations = {
     modeDaltonisme: 'Mode daltonien',
     langue: 'Français/Anglais',
     fermer: 'Fermer',
+    defiDuJour: 'Défi du jour',
   },
   en: {
     titre: 'Color Sudoku',
@@ -56,5 +57,6 @@ export const translations = {
     modeDaltonisme: 'Colorblind mode',
     langue: 'English/french',
     fermer: 'Close',
+    defiDuJour: 'Daily challenge'
   }
 }

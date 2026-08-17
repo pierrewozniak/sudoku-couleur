@@ -71,3 +71,30 @@ export function verifierSolution(grille) {
     }
     return true
 }
+
+function seededRandom(seed) {
+  let x = Math.sin(seed) * 10000
+  return x - Math.floor(x)
+}
+
+function dateEnSeed() {
+  const aujourdhui = new Date()
+  return aujourdhui.getFullYear() * 10000 + 
+         (aujourdhui.getMonth() + 1) * 100 + 
+         aujourdhui.getDate()
+}
+
+export function genererGrilleQuotidienne() {
+  const seed = dateEnSeed()
+    const grille = newGrille()
+    remplirGrille(grille)
+
+    const ordre = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        for( let i = 8; i > 0; i--){
+            const j = Math.floor(seededRandom(seed + i ) * (i + 1))
+            const temp = ordre[i]
+            ordre[i] = ordre[j]
+            ordre[j] = temp
+        } 
+    return grille.map(ligne => ligne.map(cellule => ordre[cellule]))
+}
