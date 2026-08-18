@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { generateGrille } from './sudoku.js'
 import { masquerCellules } from './sudoku.js'
 import { genererGrilleQuotidienne} from './sudoku.js'
-import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak} from './storage.js'
+import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak, chargerStatistiques, sauvegarderStatistiques} from './storage.js'
 import { Analytics } from "@vercel/analytics/react"
 import { translations } from './translations.js'
 import parametres from './assets/parametres.png'
@@ -577,12 +577,48 @@ function NavBar({ ecran, setEcran, chargerClassement, t }) {
   )
 }
 
-function PageStats({ t }) {
+function PageStats({ t, statistiques, meilleursScores, dernieresParties, streak }) {
   return (
     <div style={{ ...STYLE_PAGE, background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
       <div style={STYLE_CARTE}>
-        <h2 style={{ color: '#1a56db' }}>Stats</h2>
-        <p style={{ color: '#666' }}>Bientôt disponible !</p>
+        <h2 style={{ color: '#1a56db', marginBottom: '24px' }}>📊 Stats</h2>
+
+        {/* Streak */}
+        <div style={{ padding: '12px', backgroundColor: '#eff6ff', borderRadius: '12px', marginBottom: '16px' }}>
+          <p style={{ color: '#1a56db', fontWeight: 'bold', fontSize: '18px', margin: 0 }}>
+            {streak} {streak > 1 ? t.jours : t.jour} {t.serieEnCours}
+          </p>
+        </div>
+
+        {/* Parties jouées */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+          <span style={{ color: '#666' }}>Parties jouées</span>
+          <span style={{ fontWeight: 'bold' }}>{statistiques.partiesJouees}</span>
+        </div>
+
+        {/* Erreurs totales */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+          <span style={{ color: '#666' }}>Erreurs totales</span>
+          <span style={{ fontWeight: 'bold', color: '#E74C3C' }}>{statistiques.erreursTotal}</span>
+        </div>
+
+        {/* Meilleurs scores */}
+        <h3 style={{ color: '#1a56db', marginTop: '16px', marginBottom: '8px' }}>Meilleurs scores</h3>
+        {['facile', 'moyen', 'difficile'].map(n => meilleursScores[n] && (
+          <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+            <span style={{ color: '#666', textTransform: 'capitalize' }}>{n}</span>
+            <span style={{ fontWeight: 'bold' }}>{meilleursScores[n].score} pts / {meilleursScores[n].temps}s</span>
+          </div>
+        ))}
+
+        {/* Dernières parties */}
+        <h3 style={{ color: '#1a56db', marginTop: '16px', marginBottom: '8px' }}>Dernières parties</h3>
+        {['facile', 'moyen', 'difficile'].map(n => dernieresParties[n] && (
+          <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+            <span style={{ color: '#666', textTransform: 'capitalize' }}>{n}</span>
+            <span style={{ fontWeight: 'bold' }}>{dernieresParties[n].score} pts / {dernieresParties[n].temps}s</span>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -615,6 +651,7 @@ function App() {
   const [defiDuJour] = useState(() => genererGrilleQuotidienne)
   const [utilisateur, setUtilisateur] = useState(null)
   const [classement, setClassement] = useState([])
+  const [statistiques, setStatistiques] = useState(chargerStatistiques())
 
 async function chargerClassement() {
   const data = await chargerClassementMondial()
@@ -799,10 +836,14 @@ function utiliserAide() {
           setDernieresParties(chargerDernieresParties())
           setMeilleursScores(chargerScores())
           supprimerPartie()
+          sauvegarderStatistiques(erreurs)
+          setStatistiques(chargerStatistiques())
           if (utilisateur) { 
           sauvegarderScoreFirestore(utilisateur, niveau, calculerScore(), temps)
+      }
+          
   }
-        }
+        
     } else {
       const nouvellesErreurs = erreurs + 1
       setErreurs(nouvellesErreurs)
@@ -811,6 +852,8 @@ function utiliserAide() {
       if (nouvellesErreurs >= 3) {setStatut('gameover')
          setChronoActif(false)
         supprimerPartie()
+        sauvegarderStatistiques(nouvellesErreurs)
+        setStatistiques(chargerStatistiques())
       }
     }
   }
@@ -845,7 +888,7 @@ function utiliserAide() {
           : ecran === 'classement'
             ? <PageClassement classement={classement} setEcran={setEcran} t={t} />
             : ecran === 'stats'
-            ? <PageStats t={t} />
+            ? <PageStats t={t} statistiques={statistiques} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} />
             : <div style={{ position: 'relative' }}>
                 <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides} t={t} couleursActives={couleursActives} estMobile={estMobile}/>
                 {statut === 'gameover' && <Popup titre={t.finDePartie} message={t.messagePerte} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}

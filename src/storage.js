@@ -70,3 +70,15 @@ export function mettreAJourStreak() {
   localStorage.setItem('sudoku_streak', JSON.stringify({ streak: nouveauStreak, derniereVisite: aujourdhui }))
 return nouveauStreak
 }
+
+export function sauvegarderStatistiques(erreurs) {
+  const stats = chargerStatistiques()
+  stats.partiesJouees = (stats.partiesJouees || 0) + 1
+  stats.erreursTotal = (stats.erreursTotal || 0) + erreurs
+  localStorage.setItem('sudoku_stats', JSON.stringify(stats))
+}
+
+export function chargerStatistiques() {
+  const data = localStorage.getItem('sudoku_stats')
+  return data ? JSON.parse(data) : { partiesJouees: 0, erreursTotal: 0 }
+}
