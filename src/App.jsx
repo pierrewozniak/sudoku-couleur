@@ -780,7 +780,7 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async  (user) => {
-      console.log('user:', user)
+
       setUtilisateur(user)
       if(user) {
         const docRef = doc(db, 'scores', user.uid)
