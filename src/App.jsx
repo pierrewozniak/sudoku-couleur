@@ -304,7 +304,6 @@ function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, l
 }
 
 function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur, utiliserAide, aides, t, couleursActives, estMobile }) {
-  console.log('PageJeu erreurs:', erreurs)
   function formaterTemps(secondes) {
     const minutes = Math.floor(secondes / 60)
     const secs = secondes % 60
@@ -767,13 +766,20 @@ function App() {
   const [parametresOuverts, setParametresOuverts] = useState(false)
   const [modeDaltonisme, setModeDaltonisme] = useState(false)
   const couleursActives = modeDaltonisme ? COULEURS_DALTONIEN : COULEURS
-  const [defiDuJour] = useState(() => genererGrilleQuotidienne)
   const [utilisateur, setUtilisateur] = useState(null)
   const [pseudoManquant, setPseudoManquant] = useState(false)
   const [classement, setClassement] = useState([])
   const [statistiques, setStatistiques] = useState(chargerStatistiques())
   const [niveauClassement, setNiveauClassement] = useState('facile')
   const [pseudoJoueur, setPseudoJoueur] = useState(null)
+
+  const [defiDuJour] = useState(() => {
+    const grille = genererGrilleQuotidienne()
+    return {
+      solution: grille,
+      grilleInitiale: masquerCellules(grille, 45)
+    }
+  })
 
 
 
@@ -830,11 +836,7 @@ async function chargerClassement(niveau = 'facile') {
 
   async function seConnecter() {
     const provider = new GoogleAuthProvider()
-    try {
-      await signInWithPopup(auth, provider)
-    } catch (error) {
-      console.error('Erreur connexion:', error)
-    }
+      await signInWithPopup(auth, provider) 
   }
 
   async function seDeconnecter() {
@@ -864,18 +866,15 @@ function lancerPartie() {
   setCasesAide(0)
 }
 
-function lancerDefi() {
-  const grilleComplete = genererGrilleQuotidienne()
-  const grilleDefi = masquerCellules(grilleComplete, 45)
-  
+async function lancerDefi() {
   const couleursDejaCompletes = []
   couleursActives.forEach((_, index) => {
-    const nb = grilleDefi.flat().filter(c => c === index).length
+    const nb = defiDuJour.grilleInitiale.flat().filter(c => c === index).length
     if (nb === 9) couleursDejaCompletes.push(index)
   })
 
-  setSolution(grilleComplete)
-  setGrille(grilleDefi)
+  setSolution(defiDuJour.solution)
+  setGrille(defiDuJour.grilleInitiale)
   setNiveau('defi')
   setEcran('jeu')
   setErreurs(0)
@@ -937,10 +936,6 @@ function utiliserAide() {
   }
 
   function handleCelluleClic(ligneIndex, colIndex) {
-      console.log('clic cellule', ligneIndex, colIndex)
-  console.log('grille[li][ci]:', grille[ligneIndex][colIndex])
-  console.log('couleurSelectionnee:', couleurSelectionnee)
-  console.log('solution[li][ci]:', solution[ligneIndex][colIndex])
     if (erreurs >= 3) {
       setStatut('gameover')
       return
@@ -986,9 +981,7 @@ function utiliserAide() {
   }
         
     } else {
-      console.log('mauvaise couleur, erreurs avant:', erreurs)
       const nouvellesErreurs = erreurs + 1
-      console.log('nouvellesErreurs:', nouvellesErreurs)
       setErreurs(nouvellesErreurs)
       setCelluleErreur({ ligne : ligneIndex, col : colIndex})
       setTimeout(() => setCelluleErreur(null), 400)
@@ -1027,7 +1020,7 @@ function utiliserAide() {
       
       <div style={{ flex: 1, minHeight : 0, overflowY: 'auto', overflowX: 'hidden' }}> 
         {ecran === 'accueil'
-          ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts} estMobile={estMobile} defiDuJour={defiDuJour} lancerDefi={lancerDefi} chargerClassement={chargerClassement}/>
+          ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts} estMobile={estMobile} lancerDefi={lancerDefi} chargerClassement={chargerClassement}/>
           : ecran === 'classement'
             ? <PageClassement classement={classement} t={t} niveauClassement={niveauClassement} chargerClassement={chargerClassement}/>
             : ecran === 'stats'
