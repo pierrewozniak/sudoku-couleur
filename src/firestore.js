@@ -1,7 +1,7 @@
 import { db } from './firebase.js'
 import { doc, setDoc, getDoc, collection, getDocs, orderBy, query, limit } from 'firebase/firestore'
 
-// Sauvegarder le score d'un utilisateur
+
 export async function sauvegarderScoreFirestore(utilisateur, niveau, score, temps) {
   const docRef = doc(db, 'scores', utilisateur.uid)
   
@@ -14,16 +14,22 @@ export async function sauvegarderScoreFirestore(utilisateur, niveau, score, temp
   }, { merge: true })
 }
 
-// Récupérer le classement mondial
-export async function chargerClassementMondial() {
+
+export async function chargerClassementMondial(niveau) {
   const querySnapshot = await getDocs(collection(db, 'scores'))
-    const classement = []
-        querySnapshot.forEach(doc => {
-            classement.push({
-                id: doc.id,
-                ...doc.data()
-                
-            })
-        })    
-        return classement
+  const classement = []
+  
+  querySnapshot.forEach(doc => {
+    const data = doc.data()
+    if (data.scores?.[niveau]) { 
+      classement.push({
+        id: doc.id,
+        pseudo: data.pseudo,
+        score: data.scores[niveau].score,
+        temps: data.scores[niveau].temps,
+      })
+    }
+  })
+
+  return classement.sort((a, b) => b.score - a.score)
 }

@@ -476,47 +476,69 @@ function Popup({ titre, message, lancerPartie, setEcran, t }) {
   )
 }
 
-function PageClassement({ classement, setEcran, t }) {
+function PageClassement({ classement, t, niveauClassement, chargerClassement }) {
+  const niveaux = ['facile', 'moyen', 'difficile']
+
   return (
     <div style={{ ...STYLE_PAGE, background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
       <div style={STYLE_CARTE}>
-        <h2 style={{ color: '#1a56db', marginBottom: '24px' }}>{t.classement}</h2>
-        
+        <h2 style={{ color: '#1a56db', marginBottom: '16px' }}>{t.classement}</h2>
+
+        {/* Onglets niveaux */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+          {niveaux.map(n => (
+            <button
+              key={n}
+              onClick={() => chargerClassement(n)}
+              style={{
+                flex: 1,
+                padding: '8px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: niveauClassement === n ? '#1a56db' : '#e5e7eb',
+                color: niveauClassement === n ? 'white' : '#666',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '13px',
+                textTransform: 'capitalize',
+              }}
+            >
+              {t[n]}
+            </button>
+          ))}
+        </div>
+
+        {/* Liste classement */}
         {classement.length === 0 ? (
-          <p style={{ color: '#666' }}>Aucun score pour l'instant</p>
+          <p style={{ color: '#666' }}>Aucun score pour ce niveau</p>
         ) : (
           classement.map((joueur, index) => (
             <div key={joueur.id} style={{
-              display: 'flex', justifyContent: 'space-between',
-              alignItems: 'center', padding: '12px',
-              borderBottom: '1px solid #f0f0f0',
-              backgroundColor: index === 0 ? '#fffbeb' : 'white',
-              borderRadius: '8px', marginBottom: '8px'
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '12px',
+              backgroundColor: index === 0 ? '#fffbeb' : index % 2 === 0 ? '#f9f9f9' : 'white',
+              borderRadius: '8px',
+              marginBottom: '8px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontWeight: 'bold', color: '#1a56db' }}>#{index + 1}</span>
-                <span>{joueur.pseudo}</span>
+                <span style={{ 
+                  fontWeight: 'bold', 
+                  color: index === 0 ? '#F1C40F' : index === 1 ? '#999' : index === 2 ? '#E67E22' : '#1a56db',
+                  fontSize: '18px'
+                }}>
+                  #{index + 1}
+                </span>
+                <span style={{ fontWeight: index === 0 ? 'bold' : 'normal' }}>{joueur.pseudo}</span>
               </div>
               <div style={{ textAlign: 'right', fontSize: '13px' }}>
-                {joueur.scores?.facile && <div>Facile: {joueur.scores.facile.score} pts</div>}
-                {joueur.scores?.moyen && <div>Moyen: {joueur.scores.moyen.score} pts</div>}
-                {joueur.scores?.difficile && <div>Difficile: {joueur.scores.difficile.score} pts</div>}
+                <div style={{ fontWeight: 'bold', color: '#1a56db' }}>{joueur.score} pts</div>
+                <div style={{ color: '#999' }}>{joueur.temps}s</div>
               </div>
             </div>
           ))
         )}
-
-        <button 
-          onClick={() => setEcran('accueil')}
-          style={{
-            width: '100%', padding: '12px', marginTop: '16px',
-            backgroundColor: '#1a56db', color: 'white',
-            border: 'none', borderRadius: '12px',
-            fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'
-          }}
-        >
-          {t.accueil}
-        </button>
       </div>
     </div>
   )
@@ -652,10 +674,13 @@ function App() {
   const [utilisateur, setUtilisateur] = useState(null)
   const [classement, setClassement] = useState([])
   const [statistiques, setStatistiques] = useState(chargerStatistiques())
+  const [niveauClassement, setNiveauClassement] = useState('facile')
 
-async function chargerClassement() {
-  const data = await chargerClassementMondial()
+
+async function chargerClassement(niveau = 'facile') {
+  const data = await chargerClassementMondial(niveau)
   setClassement(data)
+  setNiveauClassement(niveau)
   setEcran('classement')
 }
 
@@ -886,7 +911,7 @@ function utiliserAide() {
         {ecran === 'accueil'
           ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts} estMobile={estMobile} defiDuJour={defiDuJour} lancerDefi={lancerDefi} chargerClassement={chargerClassement}/>
           : ecran === 'classement'
-            ? <PageClassement classement={classement} setEcran={setEcran} t={t} />
+            ? <PageClassement classement={classement} t={t} niveauClassement={niveauClassement} chargerClassement={chargerClassement}/>
             : ecran === 'stats'
             ? <PageStats t={t} statistiques={statistiques} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} />
             : <div style={{ position: 'relative' }}>
