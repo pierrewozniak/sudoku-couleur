@@ -304,6 +304,7 @@ function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, l
 }
 
 function PageJeu({ grille, couleurSelectionnee, setCouleurSelectionnee, handleCelluleClic, erreurs, couleursCompletes, temps, setChronoActif, setEcran, setPartieSauvegardee, celluleErreur, utiliserAide, aides, t, couleursActives, estMobile }) {
+  console.log('PageJeu erreurs:', erreurs)
   function formaterTemps(secondes) {
     const minutes = Math.floor(secondes / 60)
     const secs = secondes % 60
