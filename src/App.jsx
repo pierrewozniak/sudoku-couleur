@@ -936,7 +936,10 @@ function utiliserAide() {
   }
 
   function handleCelluleClic(ligneIndex, colIndex) {
-
+      console.log('clic cellule', ligneIndex, colIndex)
+  console.log('grille[li][ci]:', grille[ligneIndex][colIndex])
+  console.log('couleurSelectionnee:', couleurSelectionnee)
+  console.log('solution[li][ci]:', solution[ligneIndex][colIndex])
     if (erreurs >= 3) {
       setStatut('gameover')
       return
