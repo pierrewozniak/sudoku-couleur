@@ -927,13 +927,17 @@ function utiliserAide() {
     }
   }
 
-  function calculerScore() {
-  const pointsBase = niveau === 'facile' ? 1000 : niveau === 'moyen' ? 2000 : 3000
-  const malusErreurs = erreurs * 200
-  const malusAides = casesAide * 150
+function calculerScore() {
+  const pointsBase = niveau === 'facile' ? 1000 : niveau === 'moyen' ? 2000 : niveau === 'difficile' ? 3000 : 2500
+  
+  const multiplicateurPrecision = erreurs === 0 ? 1.5 : erreurs === 1 ? 1.2 : erreurs === 2 ? 1.0 : 0.5
+  
   const bonusTemps = temps < 120 ? 500 : temps < 300 ? 200 : temps < 600 ? 100 : 0
-  return Math.max(0, pointsBase - malusErreurs - malusAides + bonusTemps)
-  }
+  
+  const malusAides = casesAide * 150
+  
+  return Math.max(0, Math.round(pointsBase * multiplicateurPrecision) + bonusTemps - malusAides)
+}
 
   function handleCelluleClic(ligneIndex, colIndex) {
     if (erreurs >= 3) {
