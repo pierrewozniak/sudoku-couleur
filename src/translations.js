@@ -32,6 +32,17 @@ export const translations = {
     deconnexion: 'Se déconnecter',
     parametres: 'Paramètres',
     classement : 'Classement',
+    mondial: 'Mondial',
+    amis: 'Amis',
+    partiesJouees: 'Parties jouées',
+    erreursTotal: 'Erreurs totales',
+    meilleursScores: 'Meilleurs scores',
+    dernieresParties: 'Dernières parties',
+    choisirPseudo: 'Choisir un pseudo',
+    valider: 'Valider',
+    pseudoVide: 'Crée toi un pseudo',
+    aucunScore: 'Aucun score pour ce niveau',
+    bientotDisponible: 'Bientôt disponible !',
 
   },
   en: {
@@ -65,6 +76,17 @@ export const translations = {
     defiDuJour: 'Daily challenge',
     connexion: 'Sign in',
     deconnexion: 'Sign out',
-    classement: 'Leaderboard'
+    classement: 'Leaderboard',
+    mondial: 'World',
+    amis: 'Friends',
+    partiesJouees: 'Games played',
+    erreursTotal: 'Total errors',
+    meilleursScores: 'Best scores',
+    dernieresParties: 'Last games',
+    choisirPseudo: 'Choose a username',
+    valider: 'Confirm',
+    pseudoVide: 'Please enter a username',
+    aucunScore: 'No score for this level',
+    bientotDisponible: 'Coming soon!',
   }
 }

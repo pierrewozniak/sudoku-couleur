@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react'
-import { generateGrille } from './sudoku.js'
-import { masquerCellules } from './sudoku.js'
-import { genererGrilleQuotidienne} from './sudoku.js'
-import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak, chargerStatistiques, sauvegarderStatistiques} from './storage.js'
+import { generateGrille, masquerCellules, genererGrilleQuotidienne } from './sudoku.js'
+import { sauvegarderScore, chargerScores, sauvegarderPartie, chargerPartie, supprimerPartie, sauvegarderDernierePartie, chargerDernieresParties, mettreAJourStreak, chargerStatistiques, sauvegarderStatistiques } from './storage.js'
 import { Analytics } from "@vercel/analytics/react"
 import { translations } from './translations.js'
 import parametres from './assets/parametres.png'
-import { auth } from './firebase.js'
+import { auth, db } from './firebase.js'
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { sauvegarderScoreFirestore, chargerClassementMondial } from './firestore.js'
 
 const COULEURS = [
@@ -83,7 +82,7 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   )
 }
 
-function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t, setParametresOuverts, lancerDefi, chargerClassement}) {
+function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t, setParametresOuverts, lancerDefi}) {
   const niveaux = [
   { id: 'facile', label: t.facile, description: t.casesF },
   { id: 'moyen', label: t.moyen, description: t.casesM },
@@ -206,7 +205,7 @@ return (
 )
 }
 
-function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, langue, setLangue, t, utilisateur, seConnecter, seDeconnecter }) {
+function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, langue, setLangue, t, utilisateur, seConnecter, seDeconnecter, pseudoJoueur }) {
   return (
     <div 
       onClick={() => setParametresOuverts(false)}
@@ -283,7 +282,7 @@ function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, l
           <div style={{ padding: '8px 0', borderTop: '1px solid #f0f0f0', marginTop: '8px' }}>
             {utilisateur ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: '#333' }}>{utilisateur.displayName}</span>
+                <span style={{ fontSize: '13px', color: '#333' }}>{pseudoJoueur}</span>
                 <button onClick={seDeconnecter} style={{ fontSize: '12px', color: '#E74C3C', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
                   {t.deconnexion}
                 </button>
@@ -510,7 +509,7 @@ function PageClassement({ classement, t, niveauClassement, chargerClassement }) 
 
         {/* Liste classement */}
         {classement.length === 0 ? (
-          <p style={{ color: '#666' }}>Aucun score pour ce niveau</p>
+          <p style={{ color: '#666' }}>{t.aucunScore}</p>
         ) : (
           classement.map((joueur, index) => (
             <div key={joueur.id} style={{
@@ -544,10 +543,83 @@ function PageClassement({ classement, t, niveauClassement, chargerClassement }) 
   )
 }
 
+function PopupPseudo({ setPseudoManquant, utilisateur, t }) {
+  const [pseudo, setPseudo] = useState('')
+  const [erreur, setErreur] = useState('')
+
+    async function validerPseudo() {
+      if (pseudo.trim() === '') {
+        setErreur(t.pseudoVide)
+        return
+      }
+      
+      await setDoc(doc(db, 'scores', utilisateur.uid), {
+        pseudo: pseudo,
+        email: utilisateur.email,
+      }, { merge: true })
+      
+      setPseudoManquant(false)
+    }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0,
+      width: '100%', height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 2000,
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '20px',
+        padding: '32px',
+        width: '85%',
+        maxWidth: '320px',
+        textAlign: 'center',
+      }}>
+        <h2 style={{ color: '#1a56db' }}>{t.choisirPseudo}</h2>
+        <input 
+          type="text"
+          value={pseudo}
+          onChange={e => setPseudo(e.target.value)}
+          placeholder="Ton pseudo..."
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '2px solid #e5e7eb',
+            fontSize: '16px',
+            marginTop: '16px',
+            boxSizing: 'border-box',
+          }}
+        />
+        {erreur && <p style={{ color: '#E74C3C', fontSize: '13px' }}>{erreur}</p>}
+        <button onClick={validerPseudo} style={{
+          width: '100%',
+          padding: '12px',
+          backgroundColor: '#1a56db',
+          color: 'white',
+          border: 'none',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          marginTop: '16px',
+        }}>
+          {t.valider}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function NavBar({ ecran, setEcran, chargerClassement, t }) {
   const items = [
     { id: 'accueil', label: t.accueil, icon: '⌂', action: () => setEcran('accueil') },
-    { id: 'classement', label: t.classement, icon: '◎', action: chargerClassement },
+    { id: 'classement', label: t.classement, icon: '◎', action: () => chargerClassement('facile')},
     { id: 'stats', label: 'Stats', icon: '∷', action: () => setEcran('stats') },
   ]
 
@@ -600,10 +672,11 @@ function NavBar({ ecran, setEcran, chargerClassement, t }) {
 }
 
 function PageStats({ t, statistiques, meilleursScores, dernieresParties, streak }) {
+  const [niveauStats, setNiveauStats] = useState('facile')
   return (
     <div style={{ ...STYLE_PAGE, background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
       <div style={STYLE_CARTE}>
-        <h2 style={{ color: '#1a56db', marginBottom: '24px' }}>📊 Stats</h2>
+        <h2 style={{ color: '#1a56db', marginBottom: '24px' }}>∷ Stats</h2>
 
         {/* Streak */}
         <div style={{ padding: '12px', backgroundColor: '#eff6ff', borderRadius: '12px', marginBottom: '16px' }}>
@@ -614,33 +687,56 @@ function PageStats({ t, statistiques, meilleursScores, dernieresParties, streak 
 
         {/* Parties jouées */}
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-          <span style={{ color: '#666' }}>Parties jouées</span>
+          <span style={{ color: '#666' }}>{t.partiesJouees}</span>
           <span style={{ fontWeight: 'bold' }}>{statistiques.partiesJouees}</span>
         </div>
 
         {/* Erreurs totales */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-          <span style={{ color: '#666' }}>Erreurs totales</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0', marginBottom: '16px' }}>
+          <span style={{ color: '#666' }}>{t.erreursTotal}</span>
           <span style={{ fontWeight: 'bold', color: '#E74C3C' }}>{statistiques.erreursTotal}</span>
         </div>
 
-        {/* Meilleurs scores */}
-        <h3 style={{ color: '#1a56db', marginTop: '16px', marginBottom: '8px' }}>Meilleurs scores</h3>
-        {['facile', 'moyen', 'difficile'].map(n => meilleursScores[n] && (
-          <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <span style={{ color: '#666', textTransform: 'capitalize' }}>{n}</span>
-            <span style={{ fontWeight: 'bold' }}>{meilleursScores[n].score} pts / {meilleursScores[n].temps}s</span>
-          </div>
-        ))}
+        {/* Onglets niveaux */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          {['facile', 'moyen', 'difficile'].map(n => (
+            <button
+              key={n}
+              onClick={() => setNiveauStats(n)}
+              style={{
+                flex: 1, padding: '8px', borderRadius: '8px', border: 'none',
+                backgroundColor: niveauStats === n ? '#1a56db' : '#e5e7eb',
+                color: niveauStats === n ? 'white' : '#666',
+                fontWeight: 'bold', cursor: 'pointer', fontSize: '13px',
+              }}
+            >
+              {t[n]}
+            </button>
+          ))}
+        </div>
 
-        {/* Dernières parties */}
-        <h3 style={{ color: '#1a56db', marginTop: '16px', marginBottom: '8px' }}>Dernières parties</h3>
-        {['facile', 'moyen', 'difficile'].map(n => dernieresParties[n] && (
-          <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <span style={{ color: '#666', textTransform: 'capitalize' }}>{n}</span>
-            <span style={{ fontWeight: 'bold' }}>{dernieresParties[n].score} pts / {dernieresParties[n].temps}s</span>
+        {/* Meilleur score du niveau */}
+        <h3 style={{ color: '#1a56db', marginTop: '8px', marginBottom: '8px' }}>{t.meilleursScores}</h3>
+        {meilleursScores[niveauStats] ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+            <span style={{ color: '#666' }}>{t[niveauStats]}</span>
+            <span style={{ fontWeight: 'bold' }}>{meilleursScores[niveauStats].score} pts / {meilleursScores[niveauStats].temps}s</span>
           </div>
-        ))}
+        ) : (
+          <p style={{ color: '#999', fontSize: '13px' }}>{t.aucunScore}</p>
+        )}
+
+        {/* Dernière partie du niveau */}
+        <h3 style={{ color: '#1a56db', marginTop: '16px', marginBottom: '8px' }}>{t.dernieresParties}</h3>
+        {dernieresParties[niveauStats] ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+            <span style={{ color: '#666' }}>{t[niveauStats]}</span>
+            <span style={{ fontWeight: 'bold' }}>{dernieresParties[niveauStats].score} pts / {dernieresParties[niveauStats].temps}s</span>
+          </div>
+        ) : (
+          <p style={{ color: '#999', fontSize: '13px' }}>{t.aucunScore}</p>
+        )}
+
       </div>
     </div>
   )
@@ -672,37 +768,33 @@ function App() {
   const couleursActives = modeDaltonisme ? COULEURS_DALTONIEN : COULEURS
   const [defiDuJour] = useState(() => genererGrilleQuotidienne)
   const [utilisateur, setUtilisateur] = useState(null)
+  const [pseudoManquant, setPseudoManquant] = useState(false)
   const [classement, setClassement] = useState([])
   const [statistiques, setStatistiques] = useState(chargerStatistiques())
   const [niveauClassement, setNiveauClassement] = useState('facile')
+  const [pseudoJoueur, setPseudoJoueur] = useState(null)
 
 
-async function chargerClassement(niveau = 'facile') {
-  const data = await chargerClassementMondial(niveau)
-  setClassement(data)
-  setNiveauClassement(niveau)
-  setEcran('classement')
-}
+
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async  (user) => {
+      console.log('user:', user)
       setUtilisateur(user)
+      if(user) {
+        const docRef = doc(db, 'scores', user.uid)
+        const docSnap = await getDoc(docRef)
+        if(!docSnap.exists() || !docSnap.data().pseudo) {
+          setPseudoManquant(true)
+        }else {
+          setPseudoJoueur(docSnap.data().pseudo)
+        }
+      }
     })
     return () => unsubscribe()
   }, [])
 
-  async function seConnecter() {
-    const provider = new GoogleAuthProvider()
-    try {
-      await signInWithPopup(auth, provider)
-    } catch (error) {
-      console.error('Erreur connexion:', error)
-    }
-  }
 
-  async function seDeconnecter() {
-    await signOut(auth)
-  }
 
   useEffect(() => {
   const handleResize = () => setEstMobile(window.innerWidth < 768)
@@ -727,6 +819,26 @@ async function chargerClassement(niveau = 'facile') {
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
+
+async function chargerClassement(niveau = 'facile') {
+  const data = await chargerClassementMondial(niveau)
+  setClassement(data)
+  setNiveauClassement(niveau)
+  setEcran('classement')
+}
+
+  async function seConnecter() {
+    const provider = new GoogleAuthProvider()
+    try {
+      await signInWithPopup(auth, provider)
+    } catch (error) {
+      console.error('Erreur connexion:', error)
+    }
+  }
+
+  async function seDeconnecter() {
+    await signOut(auth)
+  }
 
 function lancerPartie() {
   const nbCachees = niveau === 'facile' ? 40 : niveau === 'moyen' ? 55 : 65
@@ -924,7 +1036,8 @@ function utiliserAide() {
 
       {ecran !== 'jeu' && <NavBar ecran={ecran} setEcran={setEcran} chargerClassement={chargerClassement} t={t}/>}
       
-      {parametresOuverts && <Parametres setParametresOuverts={setParametresOuverts} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} t={t} langue={langue} setLangue={setLangue} utilisateur={utilisateur} seConnecter={seConnecter} seDeconnecter={seDeconnecter}/>}
+      {parametresOuverts && <Parametres setParametresOuverts={setParametresOuverts} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} t={t} langue={langue} setLangue={setLangue} utilisateur={utilisateur} seConnecter={seConnecter} seDeconnecter={seDeconnecter} pseudoJoueur={pseudoJoueur}/>}
+      {pseudoManquant && <PopupPseudo setPseudoManquant={setPseudoManquant} utilisateur={utilisateur} t={t} />}
     </div>
   )
 }

@@ -1,12 +1,11 @@
 import { db } from './firebase.js'
-import { doc, setDoc, getDoc, collection, getDocs, orderBy, query, limit } from 'firebase/firestore'
+import { doc, setDoc, collection, getDocs} from 'firebase/firestore'
 
 
 export async function sauvegarderScoreFirestore(utilisateur, niveau, score, temps) {
   const docRef = doc(db, 'scores', utilisateur.uid)
   
   await setDoc(docRef, {
-    pseudo: utilisateur.displayName,
     email: utilisateur.email,
     scores: {
       [niveau]: { score: score, temps: temps }
