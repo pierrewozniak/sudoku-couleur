@@ -31,6 +31,7 @@ export const translations = {
     connexion: 'Se connecter',
     deconnexion: 'Se déconnecter',
     parametres: 'Paramètres',
+    classement : 'Classement',
 
   },
   en: {
@@ -64,5 +65,6 @@ export const translations = {
     defiDuJour: 'Daily challenge',
     connexion: 'Sign in',
     deconnexion: 'Sign out',
+    classement: 'Leaderboard'
   }
 }

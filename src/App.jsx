@@ -36,13 +36,14 @@ const COULEURS_DALTONIEN = [
 ]
 
 const STYLE_PAGE = {
-  minHeight: '100dvh',
+  minHeight :'100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   fontFamily: "'Segoe UI', Arial, sans-serif",
   padding: '16px',
+  paddingBottom: '80px',
   boxSizing: 'border-box',
 }
 
@@ -55,6 +56,7 @@ const STYLE_CARTE = {
   width: '100%',
   maxWidth: '480px',
   boxSizing: 'border-box',
+  paddingBottom: '80px',
 }
 
 
@@ -81,7 +83,7 @@ function Cellule({ couleur, onClick, borderRight, borderBottom, enErreur}) {
   )
 }
 
-function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t, setParametresOuverts, lancerDefi}) {
+function PageAccueil({ niveau, setNiveau, lancerPartie, partieSauvegardee, reprendrePartie, dernieresParties, streak = 0, t, setParametresOuverts, lancerDefi, chargerClassement}) {
   const niveaux = [
   { id: 'facile', label: t.facile, description: t.casesF },
   { id: 'moyen', label: t.moyen, description: t.casesM },
@@ -116,7 +118,7 @@ return (
         style={{
           width: '100%',
           padding: '16px',
-          background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)',
+          background: 'linear-gradient(135deg, #bfdefa, #0066ff, #00ccff)',
           color: 'white',
           border: 'none',
           borderRadius: '12px',
@@ -131,7 +133,6 @@ return (
       </button>
 
       <p style={{ color: '#666', marginBottom: '32px' }}>{t.choisisDifficulte}</p>
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
         {niveaux.map(n => (
           <button
@@ -257,7 +258,7 @@ function Parametres({ setParametresOuverts, modeDaltonisme, setModeDaltonisme, l
           </div>
         </div>
 
-        {/* Mode daltonisme */}
+      
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
           <span style={{ fontSize: '14px', color: '#333', fontWeight: 'bold' }}>{t.modeDaltonisme}</span>
           <div
@@ -475,6 +476,118 @@ function Popup({ titre, message, lancerPartie, setEcran, t }) {
   )
 }
 
+function PageClassement({ classement, setEcran, t }) {
+  return (
+    <div style={{ ...STYLE_PAGE, background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
+      <div style={STYLE_CARTE}>
+        <h2 style={{ color: '#1a56db', marginBottom: '24px' }}>{t.classement}</h2>
+        
+        {classement.length === 0 ? (
+          <p style={{ color: '#666' }}>Aucun score pour l'instant</p>
+        ) : (
+          classement.map((joueur, index) => (
+            <div key={joueur.id} style={{
+              display: 'flex', justifyContent: 'space-between',
+              alignItems: 'center', padding: '12px',
+              borderBottom: '1px solid #f0f0f0',
+              backgroundColor: index === 0 ? '#fffbeb' : 'white',
+              borderRadius: '8px', marginBottom: '8px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontWeight: 'bold', color: '#1a56db' }}>#{index + 1}</span>
+                <span>{joueur.pseudo}</span>
+              </div>
+              <div style={{ textAlign: 'right', fontSize: '13px' }}>
+                {joueur.scores?.facile && <div>Facile: {joueur.scores.facile.score} pts</div>}
+                {joueur.scores?.moyen && <div>Moyen: {joueur.scores.moyen.score} pts</div>}
+                {joueur.scores?.difficile && <div>Difficile: {joueur.scores.difficile.score} pts</div>}
+              </div>
+            </div>
+          ))
+        )}
+
+        <button 
+          onClick={() => setEcran('accueil')}
+          style={{
+            width: '100%', padding: '12px', marginTop: '16px',
+            backgroundColor: '#1a56db', color: 'white',
+            border: 'none', borderRadius: '12px',
+            fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'
+          }}
+        >
+          {t.accueil}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function NavBar({ ecran, setEcran, chargerClassement, t }) {
+  const items = [
+    { id: 'accueil', label: t.accueil, icon: '⌂', action: () => setEcran('accueil') },
+    { id: 'classement', label: t.classement, icon: '◎', action: chargerClassement },
+    { id: 'stats', label: 'Stats', icon: '∷', action: () => setEcran('stats') },
+  ]
+
+  return (
+    <div style={{
+  backgroundColor: 'white',
+  boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
+  display: 'flex',
+  justifyContent: 'space-around',
+  alignItems: 'center',
+  height: '65px',
+  width: '100%',
+  flexShrink: 0,
+}}>
+      {items.map(item => (
+        <button
+          key={item.id}
+          onClick={item.action}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '8px 20px',
+            borderRadius: '20px',
+            backgroundColor: ecran === item.id ? '#eff6ff' : 'transparent',
+            transition: 'all 0.2s',
+          }}
+        >
+          <span style={{ 
+            fontSize: '22px',
+            color: ecran === item.id ? '#1a56db' : '#999',
+          }}>
+            {item.icon}
+          </span>
+          <span style={{ 
+            fontSize: '11px',
+            fontWeight: ecran === item.id ? 'bold' : 'normal',
+            color: ecran === item.id ? '#1a56db' : '#999',
+          }}>
+            {item.label}
+          </span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function PageStats({ t }) {
+  return (
+    <div style={{ ...STYLE_PAGE, background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' }}>
+      <div style={STYLE_CARTE}>
+        <h2 style={{ color: '#1a56db' }}>Stats</h2>
+        <p style={{ color: '#666' }}>Bientôt disponible !</p>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const [langue, setLangue] = useState(navigator.language.startsWith('fr') ? 'fr' : 'en')
   const t = translations[langue]
@@ -501,6 +614,13 @@ function App() {
   const couleursActives = modeDaltonisme ? COULEURS_DALTONIEN : COULEURS
   const [defiDuJour] = useState(() => genererGrilleQuotidienne)
   const [utilisateur, setUtilisateur] = useState(null)
+  const [classement, setClassement] = useState([])
+
+async function chargerClassement() {
+  const data = await chargerClassementMondial()
+  setClassement(data)
+  setEcran('classement')
+}
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -708,22 +828,35 @@ function utiliserAide() {
     setStatut(null)
     setChronoActif(true)
   }
-  return (
+    return (
     <div style={{ 
-  minHeight: '100dvh', 
-  width: '100%',
-  background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)' 
-}}>
+      height: '100dvh',
+      width: '100%',
+      minHeight: '0',
+      background: 'linear-gradient(135deg, #f0f8ff, #0066ff, #00ccff)',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       <Analytics />
-      {ecran === 'accueil'
-        ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts} estMobile={estMobile} defiDuJour={defiDuJour} lancerDefi={lancerDefi}/>
-        : <div style={{ position: 'relative' }}>
-            <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides} t={t} couleursActives={couleursActives} estMobile={estMobile}/>
-            {statut === 'gameover' && <Popup titre={t.finDePartie} message={t.messagePerte} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
-            {statut === 'victoire' && <Popup titre={t.bravo} message={`${t.score} : ${calculerScore()} pts — ${t.temps} : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
-          </div>
-      }
-      {parametresOuverts && <Parametres setParametresOuverts={setParametresOuverts} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} t={t} langue={langue} setLangue={setLangue}   utilisateur={utilisateur} seConnecter={seConnecter} seDeconnecter={seDeconnecter}/>}
+      
+      <div style={{ flex: 1, minHeight : 0, overflowY: 'auto', overflowX: 'hidden' }}> 
+        {ecran === 'accueil'
+          ? <PageAccueil niveau={niveau} setNiveau={setNiveau} lancerPartie={lancerPartie} partieSauvegardee={partieSauvegardee} reprendrePartie={reprendrePartie} meilleursScores={meilleursScores} dernieresParties={dernieresParties} streak={streak} t={t} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} setParametresOuverts={setParametresOuverts} estMobile={estMobile} defiDuJour={defiDuJour} lancerDefi={lancerDefi} chargerClassement={chargerClassement}/>
+          : ecran === 'classement'
+            ? <PageClassement classement={classement} setEcran={setEcran} t={t} />
+            : ecran === 'stats'
+            ? <PageStats t={t} />
+            : <div style={{ position: 'relative' }}>
+                <PageJeu grille={grille} couleurSelectionnee={couleurSelectionnee} setCouleurSelectionnee={setCouleurSelectionnee} handleCelluleClic={handleCelluleClic} erreurs={erreurs} couleursCompletes={couleursCompletes} temps={temps} setChronoActif={setChronoActif} setEcran={setEcran} setPartieSauvegardee={setPartieSauvegardee} celluleErreur={celluleErreur} utiliserAide={utiliserAide} aides={aides} t={t} couleursActives={couleursActives} estMobile={estMobile}/>
+                {statut === 'gameover' && <Popup titre={t.finDePartie} message={t.messagePerte} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
+                {statut === 'victoire' && <Popup titre={t.bravo} message={`${t.score} : ${calculerScore()} pts — ${t.temps} : ${temps}s`} lancerPartie={lancerPartie} setEcran={setEcran} t={t}/>}
+              </div>
+        }
+      </div>
+
+      {ecran !== 'jeu' && <NavBar ecran={ecran} setEcran={setEcran} chargerClassement={chargerClassement} t={t}/>}
+      
+      {parametresOuverts && <Parametres setParametresOuverts={setParametresOuverts} modeDaltonisme={modeDaltonisme} setModeDaltonisme={setModeDaltonisme} t={t} langue={langue} setLangue={setLangue} utilisateur={utilisateur} seConnecter={seConnecter} seDeconnecter={seDeconnecter}/>}
     </div>
   )
 }

@@ -52,6 +52,7 @@
 
 body {
   margin: 0;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 #root {
@@ -119,4 +120,12 @@ code {
 
 .cellule-erreur {
   animation: tremblement 0.4s ease;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  padding-bottom: env(safe-area-inset-bottom);
 }
