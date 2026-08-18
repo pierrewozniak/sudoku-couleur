@@ -985,7 +985,9 @@ function utiliserAide() {
   }
         
     } else {
+      console.log('mauvaise couleur, erreurs avant:', erreurs)
       const nouvellesErreurs = erreurs + 1
+      console.log('nouvellesErreurs:', nouvellesErreurs)
       setErreurs(nouvellesErreurs)
       setCelluleErreur({ ligne : ligneIndex, col : colIndex})
       setTimeout(() => setCelluleErreur(null), 400)
