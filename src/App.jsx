@@ -41,7 +41,7 @@ const STYLE_PAGE = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  fontFamily: "'Segoe UI', Arial, sans-serif",
+  fontFamily: "'Nunito', sans-serif",
   padding: '16px',
   paddingBottom: '80px',
   boxSizing: 'border-box',

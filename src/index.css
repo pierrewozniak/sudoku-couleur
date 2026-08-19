@@ -129,3 +129,8 @@ code {
 body {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+* {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+}
