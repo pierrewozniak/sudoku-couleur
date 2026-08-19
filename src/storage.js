@@ -53,10 +53,6 @@ export function mettreAJourStreak() {
   hier.setDate(hier.getDate() - 1)
   const hierString = hier.toDateString()
 
-  console.log('derniereVisite:', derniereVisite)
-  console.log('aujourdhui:', aujourdhui)
-  console.log('hierString:', hierString)
-  
   let nouveauStreak 
   if (derniereVisite === null) {
     nouveauStreak = 1
