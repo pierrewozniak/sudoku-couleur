@@ -8,6 +8,7 @@ import { auth, db } from './firebase.js'
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { sauvegarderScoreFirestore, chargerClassementMondial } from './firestore.js'
+import { Gamepad2, Medal, LineChart } from 'lucide-react'
 
 const COULEURS = [
   '#E74C3C',
@@ -618,22 +619,22 @@ function PopupPseudo({ setPseudoManquant, utilisateur, t }) {
 
 function NavBar({ ecran, setEcran, chargerClassement, t }) {
   const items = [
-    { id: 'accueil', label: t.accueil, icon: '⌂', action: () => setEcran('accueil') },
-    { id: 'classement', label: t.classement, icon: '◎', action: () => chargerClassement('facile')},
-    { id: 'stats', label: 'Stats', icon: '∷', action: () => setEcran('stats') },
+    { id: 'accueil', label: t.accueil, icon: <Gamepad2 size={22} />, action: () => setEcran('accueil') },
+    { id: 'classement', label: t.classement, icon: <Medal size={22} />, action: () => chargerClassement('facile') },
+    { id: 'stats', label: 'Stats', icon: <LineChart size={22} />, action: () => setEcran('stats') },
   ]
 
   return (
     <div style={{
-  backgroundColor: 'white',
-  boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
-  display: 'flex',
-  justifyContent: 'space-around',
-  alignItems: 'center',
-  height: '65px',
-  width: '100%',
-  flexShrink: 0,
-}}>
+      backgroundColor: 'white',
+      boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
+      display: 'flex',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      height: '65px',
+      width: '100%',
+      flexShrink: 0,
+    }}>
       {items.map(item => (
         <button
           key={item.id}
@@ -650,18 +651,13 @@ function NavBar({ ecran, setEcran, chargerClassement, t }) {
             borderRadius: '20px',
             backgroundColor: ecran === item.id ? '#eff6ff' : 'transparent',
             transition: 'all 0.2s',
+            color: ecran === item.id ? '#1a56db' : '#999',
           }}
         >
-          <span style={{ 
-            fontSize: '22px',
-            color: ecran === item.id ? '#1a56db' : '#999',
-          }}>
-            {item.icon}
-          </span>
+          {item.icon}
           <span style={{ 
             fontSize: '11px',
             fontWeight: ecran === item.id ? 'bold' : 'normal',
-            color: ecran === item.id ? '#1a56db' : '#999',
           }}>
             {item.label}
           </span>
