@@ -940,6 +940,8 @@ function calculerScore() {
 }
 
   function handleCelluleClic(ligneIndex, colIndex) {
+      console.log('clic', ligneIndex, colIndex)
+  console.log('erreurs avant:', erreurs)
     if (erreurs >= 3) {
       setStatut('gameover')
       return
@@ -985,7 +987,9 @@ function calculerScore() {
   }
         
     } else {
+      console.log('mauvaise couleur!')
       const nouvellesErreurs = erreurs + 1
+      console.log('nouvellesErreurs:', nouvellesErreurs)
       setErreurs(nouvellesErreurs)
       setCelluleErreur({ ligne : ligneIndex, col : colIndex})
       setTimeout(() => setCelluleErreur(null), 400)
